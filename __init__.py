@@ -7,16 +7,15 @@ from bpy.props import *
 from .yabee_libs import egg_writer
 
 bl_info = {
-    "name": "Panda3D EGG format",
-    "author": "Andrey (Ninth) Arbuzov",
+    "name": "PRPEE Panda3D EGG format",
+    "author": "Andrey (Ninth) Arbuzov - Galym Kerimbekov",
     "blender": (2, 80, 0),
     "api": 41226,
     "location": "File > Import-Export",
-    "description": ("Export to Panda3D EGG: meshes, uvs, materials, textures, "
-                    "armatures, animation and curves"),
+    "description": "Egg Exporter for Blender 2.8 and Panda3D with RenderPipeline",
     "warning": "May contain bugs. Make backup of your file before use.",
-    "wiki_url": "http://www.panda3d.org/forums/viewtopic.php?t=11441",
-    "tracker_url": "yabee.googlecode.com",
+    "wiki_url": "https://github.com/kergalym/PRPEE",
+    "tracker_url": "https://github.com/kergalym/PRPEE",
     "category": "Import-Export"}
 
 
