@@ -1,9 +1,9 @@
 ![logo](https://i.imgur.com/wIQjyYY.png)
 
 
-PRPEE 1.0
+PRPEE 1.1
 =====
-Egg Exporter for Blender 2.8 and Panda3D with RenderPipeline
+Egg Exporter for Blender 2.8+ and Panda3D with or without RenderPipeline
 
 Exporting:
 - Meshes
@@ -21,17 +21,16 @@ New minor features
 - Apply object transform
 - Blender "BackFace Culling" feature (fixed)
 
-- RenderPipeline Transparent Shading Model. 
+- RP Compat option which now activates RP-specific material parameters like emission colors, defaults to False. 
+  - RenderPipeline Transparent Shading Model. 
   It activates only when Metallic and Transmission inputs have been set to 1.0 and Emission input to 0.0 
   (works with Principled BSDF only)
   
-- RenderPipeline Skin Shading Model. 
+  - RenderPipeline Skin Shading Model. 
   It activates only when Specular input have been set to lower than 0.5 and IOR input to lower than 1.0  
   (works with Principled BSDF only)
   
-  <img src="https://i.imgur.com/yUanilZ.jpg" />
-
-- RenderPipeline Foilage Shading Model. 
+  - RenderPipeline Foilage Shading Model. 
   It activates only when Specular input have been set to lower than 0.5 and IOR input to higher than 1.0  
   (works with Principled BSDF only)
   

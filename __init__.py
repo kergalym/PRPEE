@@ -8,15 +8,13 @@ from .yabee_libs import egg_writer
 
 bl_info = {
     "name": "Panda3D EGG format",
-    "author": "Andrey (Ninth) Arbuzov",
+    "author": "Andrey (Ninth) Arbuzov/Galym (redeyedman) Kerimbekov",
     "blender": (2, 80, 0),
-    "api": 41226,
     "location": "File > Import-Export",
     "description": ("Export to Panda3D EGG: meshes, uvs, materials, textures, "
                     "armatures, animation and curves"),
     "warning": "May contain bugs. Make backup of your file before use.",
     "wiki_url": "http://www.panda3d.org/forums/viewtopic.php?t=11441",
-    "tracker_url": "yabee.googlecode.com",
     "category": "Import-Export"}
 
 
@@ -151,6 +149,12 @@ class YABEEProperty(bpy.types.PropertyGroup):
         default=False,
     )
 
+    opt_rp_compat: BoolProperty(
+        name="RP compat",
+        description="Enable compatibility with RenderPipeline",
+        default=False,
+    )
+
     opt_pview: BoolProperty(
         name="Pview",
         description="Run pview after exporting",
@@ -230,6 +234,7 @@ class YABEEProperty(bpy.types.PropertyGroup):
             layout.row().prop(self, 'opt_merge_actor')
             layout.row().prop(self, 'opt_apply_modifiers')
             layout.row().prop(self, 'opt_apply_collide_tag')
+            layout.row().prop(self, 'opt_rp_compat')
             layout.row().prop(self, 'opt_pview')
             layout.row().prop(self, 'opt_use_loop_normals')
             layout.row().prop(self, 'opt_force_export_vertex_colors')
@@ -293,6 +298,7 @@ class YABEEProperty(bpy.types.PropertyGroup):
         self.opt_merge_actor = True
         self.opt_apply_modifiers = True
         self.opt_apply_collide_tag = False
+        self.opt_rp_compat = False
         self.opt_pview = False
         self.opt_use_loop_normals = False
         self.opt_force_export_vertex_colors = False
@@ -405,6 +411,7 @@ class ExportPanda3DEGG(bpy.types.Operator, ExportHelper):
                                       sett.opt_merge_actor,
                                       sett.opt_apply_modifiers,
                                       sett.opt_apply_collide_tag,
+                                      sett.opt_rp_compat,
                                       sett.opt_pview,
                                       sett.opt_use_loop_normals,
                                       sett.opt_force_export_vertex_colors)

@@ -32,6 +32,7 @@ APPLY_OBJ_TRANSFORM = None
 MERGE_ACTOR_MESH = None
 APPLY_MOD = None
 APPLY_COLL_TAG = None
+RP_COMPAT = None
 PVIEW = True
 FORCE_EXPORT_VERTEX_COLORS = False
 USE_LOOP_NORMALS = False
@@ -607,11 +608,13 @@ class EGGMeshObjectData(EGGBaseObjectData):
                 mat = self.obj_ref.data.materials[face.material_index]
                 if FORCE_EXPORT_VERTEX_COLORS or mat:
                     col = self.colors_vtx_ref[vidx]
-                    attributes.append('  <RGBA> { %f %f %f %f }' % col[:])
+                    attributes.append('  <RGBA> { %i %i %i %i }' % col[:])
+                    # attributes.append('  <RGBA> { %f %f %f %f }' % col[:])
             else:
                 # Write out vertex colors if no material applied
                 col = self.colors_vtx_ref[vidx]
-                attributes.append('  <RGBA> { %f %f %f %f }' % col[:])
+                attributes.append('  <RGBA> { %i %i %i %i }' % col[:])
+                # attributes.append('  <RGBA> { %f %f %f %f }' % col[:])
         else:
             # if material has no texture:
             for mat in self.obj_ref.data.materials:
@@ -669,11 +672,11 @@ class EGGMeshObjectData(EGGBaseObjectData):
                 attributes = []
                 xyz(v, attributes)
                 dxyz(v, attributes)
+                uv(v, idx, attributes)
                 normal(v, idx, attributes)
                 rgba(idx, f, attributes)
-                uv(v, idx, attributes)
                 str_attr = '\n'.join(attributes)
-                vtx = '\n<Vertex> %i {%s\n}' % (idx, str_attr)
+                vtx = '\n<Vertex> %i {\n  %s\n}' % (idx, str_attr)
                 vertices.append(vtx)
                 idx += 1
         return vertices
@@ -1262,21 +1265,22 @@ def get_egg_materials_str(object_names=None):
                         emit_b = emission[2]
                         emit_a = emission[3]
 
-                        # Apply RenderPipeline SHADING_MODEL_TRANSPARENT 2;
-                        if clearcoat == 1.0:
-                            emit_r = 2
+                        if RP_COMPAT:
+                            # Apply RenderPipeline SHADING_MODEL_TRANSPARENT 2;
+                            if clearcoat == 1.0:
+                                emit_r = 2
 
-                        # Apply RenderPipeline SHADING_MODEL_CLEARCOAT 3
-                        if transmission == 1.0 and metallic == 1.0:
-                            emit_r = 3
+                            # Apply RenderPipeline SHADING_MODEL_CLEARCOAT 3
+                            if transmission == 1.0 and metallic == 1.0:
+                                emit_r = 3
 
-                        # Apply RenderPipeline SHADING_MODEL_SKIN 4
-                        if specular < 0.5 and ior < 1.0:
-                            emit_r = 4
+                            # Apply RenderPipeline SHADING_MODEL_SKIN 4
+                            if specular < 0.5 and ior < 1.0:
+                                emit_r = 4
 
-                        # Apply RenderPipeline SHADING_MODEL_FOILAGE 5
-                        if specular < 0.5 and ior > 1.0:
-                            emit_r = 5
+                            # Apply RenderPipeline SHADING_MODEL_FOILAGE 5
+                            if specular < 0.5 and ior > 1.0:
+                                emit_r = 5
 
                         mat_str += '  <Scalar> baser { %s }\n' % str(base_r)
                         mat_str += '  <Scalar> baseg { %s }\n' % str(base_g)
@@ -1481,12 +1485,12 @@ def generate_shadow_uvs():
 # -----------------------------------------------------------------------
 def write_out(fname, anims, from_actions, uv_img_as_tex, sep_anim, a_only,
               copy_tex, t_path, tbs, tex_processor, b_layers, autoselect,
-              apply_obj_transform, m_actor, apply_m, apply_coll_tag, pview,
+              apply_obj_transform, m_actor, apply_m, apply_coll_tag, rp_compat, pview,
               loop_normals, force_export_vertex_colors, objects=None):
     global FILE_PATH, ANIMATIONS, ANIMS_FROM_ACTIONS, EXPORT_UV_IMAGE_AS_TEXTURE, \
         COPY_TEX_FILES, TEX_PATH, SEPARATE_ANIM_FILE, ANIM_ONLY, \
         STRF, CALC_TBS, TEXTURE_PROCESSOR, BAKE_LAYERS, AUTOSELECT, APPLY_OBJ_TRANSFORM, \
-        MERGE_ACTOR_MESH, APPLY_MOD, APPLY_COLL_TAG, PVIEW, USED_MATERIALS, USED_TEXTURES, \
+        MERGE_ACTOR_MESH, APPLY_MOD, APPLY_COLL_TAG, RP_COMPAT, PVIEW, USED_MATERIALS, USED_TEXTURES, \
         USE_LOOP_NORMALS, FORCE_EXPORT_VERTEX_COLORS
     importlib.reload(sys.modules[lib_name + '.texture_processor'])
     importlib.reload(sys.modules[lib_name + '.utils'])
@@ -1508,6 +1512,7 @@ def write_out(fname, anims, from_actions, uv_img_as_tex, sep_anim, a_only,
     MERGE_ACTOR_MESH = m_actor
     APPLY_MOD = apply_m
     APPLY_COLL_TAG = apply_coll_tag
+    RP_COMPAT = rp_compat
     PVIEW = pview
     USE_LOOP_NORMALS = loop_normals
     FORCE_EXPORT_VERTEX_COLORS = force_export_vertex_colors
@@ -1747,13 +1752,13 @@ def write_out(fname, anims, from_actions, uv_img_as_tex, sep_anim, a_only,
 
 def write_out_test(fname, anims, uv_img_as_tex, sep_anim, a_only, copy_tex,
                    t_path, tbs, tex_processor, b_layers,
-                   m_actor, apply_m, apply_coll_tag, pview):
+                   m_actor, apply_m, apply_coll_tag, rp_compat, pview):
     import profile
     import pstats
     wo = "write_out('%s', %s, %s, %s, %s, '%s', %s, '%s', '%s', %s, %s, %s, %s, %s)" % \
          (fname, anims, uv_img_as_tex, sep_anim, a_only, copy_tex,
           t_path, tbs, tex_processor, b_layers,
-          m_actor, apply_m, apply_coll_tag, pview)
+          m_actor, apply_m, apply_coll_tag, rp_compat, pview)
     wo = wo.replace('\\', '\\\\')
     profile.runctx(wo, globals(), {}, 'main_prof')
     stats = pstats.Stats('main_prof')

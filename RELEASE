@@ -1,3 +1,8 @@
+------------- Release 1.1 ---------------
+* Added RenderPipeline compatibility option,
+which now activates RP-specific material parameters like emission colors, defaults to False.
+due to this bug https://discourse.panda3d.org/t/unexplained-red-reflection-overlay-on-model/27035/6
+
 ------------- Release 1.0 ---------------
 * Rebranding to PRPEE
 
