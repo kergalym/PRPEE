@@ -1261,7 +1261,9 @@ def get_egg_materials_str(object_names=None):
                         # base_a = basecol[3]
 
                         emit_r = emission[0]
-                        emit_g = normal_map_bump_factor
+                        emit_g = emission[1]
+                        if RP_COMPAT:
+                            emit_g = normal_map_bump_factor
                         emit_b = emission[2]
                         emit_a = emission[3]
 
