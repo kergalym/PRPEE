@@ -1742,7 +1742,7 @@ def write_out(fname, anims, from_actions, uv_img_as_tex, sep_anim, a_only,
         for obj in d:
             if obj not in old_data[d]:
                 # print("{} has {} users. Proceeding to clear.".format(obj.name, obj.users))
-                obj.user_clear()
+                # obj.user_clear()
                 try:
                     d.remove(obj, do_unlink=True)
                 except:
