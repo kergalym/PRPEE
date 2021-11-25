@@ -78,3 +78,5 @@ Before exporting:
 
 1. Select all meshes of the character except armature, or
 2. Select all meshes of the character including armature
+3. Select Blender or Panda for for Tangent/Binormal Generation (TBS) which is needed for normalmapping 
+if you use SimplePBR or Shader Generator  
