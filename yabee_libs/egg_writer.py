@@ -1210,41 +1210,34 @@ def get_egg_materials_str(object_names=None):
                         if not principled_bsdf.inputs["Base Color"].is_linked:
                             basecol = list(principled_bsdf.inputs["Base Color"].default_value)
                         else:
-                            basecol = [1, 1, 1, 1]
+                            basecol = list(principled_bsdf.inputs["Base Color"].default_value)
 
                         if not principled_bsdf.inputs["Emission"].is_linked:
                             emission = list(principled_bsdf.inputs["Emission"].default_value)
                         else:
-                            emission = [0, 0, 0, 0]
+                            emission = list(principled_bsdf.inputs["Emission"].default_value)
 
                         if not principled_bsdf.inputs["Specular"].is_linked:
                             specular = principled_bsdf.inputs["Specular"].default_value
                         else:
                             specular = principled_bsdf.inputs["Specular"].default_value
 
-                        if specular > 0.2:
-                            specular = 0.2
-
                         if not principled_bsdf.inputs["Metallic"].is_linked:
                             metallic = principled_bsdf.inputs["Metallic"].default_value
                         else:
                             metallic = principled_bsdf.inputs["Metallic"].default_value
 
-                        if metallic > 0.5:
-                            metallic = 0.5
-
                         if not principled_bsdf.inputs["Roughness"].is_linked:
-
                             roughness = principled_bsdf.inputs["Roughness"].default_value
                         else:
-                            roughness = 0
+                            roughness = principled_bsdf.inputs["Roughness"].default_value
 
                         if not principled_bsdf.inputs["IOR"].is_linked:
                             ior = principled_bsdf.inputs["IOR"].default_value
                         else:
                             ior = principled_bsdf.inputs["IOR"].default_value
 
-                        normal_map_bump_factor = 0
+                        normal_map_bump_factor = 0.0
                         if principled_bsdf.inputs["Normal"].is_linked:
                             if principled_bsdf.inputs["Normal"].links[0].from_node.name == "Normal Map":
                                 normal_map_node = principled_bsdf.inputs["Normal"].links[0].from_node
