@@ -1,10 +1,8 @@
 """ Part of the YABEE
 """
-from pathlib import Path
 
 from mathutils import *
 from math import pi
-# from .texture_processor import PbrTextures, TextureBaker
 from .texture_processor import PbrTextures
 
 from .utils import *
@@ -25,8 +23,6 @@ TEX_PATH = None
 SEPARATE_ANIM_FILE = None
 ANIM_ONLY = None
 CALC_TBS = None
-TEXTURE_PROCESSOR = None
-BAKE_LAYERS = None
 AUTOSELECT = None
 APPLY_OBJ_TRANSFORM = None
 MERGE_ACTOR_MESH = None
@@ -692,75 +688,64 @@ class EGGMeshObjectData(EGGBaseObjectData):
 
         @return: list of polygon's attributes.
         """
-        global USED_TEXTURES, TEXTURE_PROCESSOR
-        if TEXTURE_PROCESSOR in 'BAKE':
-            # Store all texture references here. It is important that this is a list
-            # so the texture order is preserved.
-            textures = []
+        global USED_TEXTURES
+        # Store all texture references here. It is important that this is a list
+        # so the texture order is preserved.
+        textures = []
 
-            # Find the material assigned to that polygon:
-            # First, check if that polygon has a material at all
-            material = None
-            matIsFancyPBRNode = False
-            if face.material_index < len(self.obj_ref.data.materials):
-                material = self.obj_ref.data.materials[face.material_index]
+        # Find the material assigned to that polygon:
+        # First, check if that polygon has a material at all
+        material = None
+        matIsFancyPBRNode = False
+        if face.material_index < len(self.obj_ref.data.materials):
+            material = self.obj_ref.data.materials[face.material_index]
 
-            if material:
-                if material.use_nodes:
-                    nodeTree = material.node_tree
-                    if nodeTree.nodes:
-                        matIsFancyPBRNode = True
+        if material:
+            if material.use_nodes:
+                nodeTree = material.node_tree
+                if nodeTree.nodes:
+                    matIsFancyPBRNode = True
 
-                        if matIsFancyPBRNode:
-                            # we need to find a couple of textures here
-                            # we do need an empty for specular but it's added somewhere else
-                            nodeNames = {"Base Color": None,
-                                         "Roughness": None,
-                                         "Normal": None,
-                                         "Specular": None}
-                            # let's crawl all links, find the ones connected to the Principled BSDF,
-                            for link in material.node_tree.links:
-                                # if the link connects to the Principled BSDF node
-                                # and it connects to one of our known sockets...
-                                if link.to_node.name == "Principled BSDF":
-                                    if link.to_socket.name in nodeNames.keys():
-                                        # If normal map texture is connected through NormalMap node
-                                        if link.from_node.name == "Normal Map":
-                                            textureNode = link.from_node.inputs[1].links[0].from_node
-                                        else:
-                                            textureNode = link.from_node
+                    if matIsFancyPBRNode:
+                        # we need to find a couple of textures here
+                        # we do need an empty for specular but it's added somewhere else
+                        nodeNames = {"Base Color": None,
+                                     "Roughness": None,
+                                     "Normal": None,
+                                     "Specular": None}
+                        # let's crawl all links, find the ones connected to the Principled BSDF,
+                        for link in material.node_tree.links:
+                            # if the link connects to the Principled BSDF node
+                            # and it connects to one of our known sockets...
+                            if link.to_node.name == "Principled BSDF":
+                                if link.to_socket.name in nodeNames.keys():
+                                    # If normal map texture is connected through NormalMap node
+                                    if link.from_node.name == "Normal Map":
+                                        textureNode = link.from_node.inputs[1].links[0].from_node
+                                    else:
+                                        textureNode = link.from_node
 
-                                        # we have to find the texture name here.
-                                        nodeNames[link.to_socket.name] = textureNode.name
+                                    # we have to find the texture name here.
+                                    nodeNames[link.to_socket.name] = textureNode.name
 
-                            for x in ["Base Color",
-                                      "Roughness",
-                                      "Normal",
-                                      "Specular"]:
-                                tex = nodeNames[x]
-                                if tex:
-                                    textures.append(tex)
-
-                    else:
-                        # The object has no material, that means it will get no textures
-                        print("WARNING: Object", self.obj_ref.name, "has no material assigned!")
-
-                    # Store all textures
-                    for tex_name in textures:
-                        if tex_name in USED_TEXTURES:
-                            # Make sure that  we'll have this texture in header
-                            # #todo:add this back once empties are added for PBR nodes
-                            attributes.append('<TRef> { %s }' % eggSafeName(tex_name))
+                        for x in ["Base Color",
+                                  "Roughness",
+                                  "Normal",
+                                  "Specular"]:
+                            tex = nodeNames[x]
+                            if tex:
+                                textures.append(tex)
 
                 else:
-                    if self.obj_ref.data.uv_layers and material.use_nodes:
-                        for btype, params in BAKE_LAYERS.items():
-                            if len(params) == 2:
-                                params = (params[0], params[0], params[1])
-                            if params[2]:
-                                attributes.append('<TRef> { %s }' \
-                                                  % eggSafeName(self.obj_ref.yabee_name \
-                                                                + '_' + btype))
+                    # The object has no material, that means it will get no textures
+                    print("WARNING: Object", self.obj_ref.name, "has no material assigned!")
+
+                # Store all textures
+                for tex_name in textures:
+                    if tex_name in USED_TEXTURES:
+                        # Make sure that  we'll have this texture in header
+                        # #todo:add this back once empties are added for PBR nodes
+                        attributes.append('<TRef> { %s }' % eggSafeName(tex_name))
 
         return attributes
 
@@ -1330,10 +1315,6 @@ def get_egg_materials_str(object_names=None):
     else:
         print("Panda3D compatible Principled BSDF shader not found, See Manual to create it first...")
 
-    """if TEXTURE_PROCESSOR == 'BAKE':
-        tb = TextureBaker(objects, FILE_PATH, TEX_PATH)
-        used_textures.update(tb.bake(BAKE_LAYERS))"""
-
     for name, params in used_textures.items():
         mat_str += '<Texture> %s {\n' % eggSafeName(name)
         mat_str += '  "' + convertFileNameToPanda(params['path']) + '"\n'
@@ -1426,8 +1407,9 @@ def parented_to_armatured():
             obj.vertex_groups[bone].add(index=idxs, weight=1.0, type='ADD')
             obj.matrix_local = obj.matrix_parent_inverse * obj.matrix_world
             obj.parent = None
-    for obj in old_selection:
-        obj.select = True
+    # TODO REMOVE UNUSED
+    # for obj in old_selection:
+    #     obj.select = True
 
 
 def reparenting_to_armature(obj_list):
@@ -1456,35 +1438,16 @@ def apply_modifiers(obj_list=None):
                     print('WARNING: Can\'t apply modifier', mod.name)
 
 
-def generate_shadow_uvs():
-    auvs = {}
-    for obj in [obj for obj in bpy.context.selected_objects if obj.type == 'MESH']:
-        auvs[obj.name] = obj.data.uv_layers.active
-        if 'yabee_shadow' not in obj.data.uv_layers.keys():
-            obj.data.uv_layers.new('yabee_shadow')
-        # else:
-        #    obj.data.uv_layers.active = obj.data.uv_layers['yabee_shadow']
-        #    obj.data.uv_layers.active = obj.data.uv_layers['yabee_shadow']
-    # bpy.ops.object.mode_set.poll()
-    obj.data.uv_layers.active = obj.data.uv_layers['yabee_shadow']
-    obj.data.update()
-    bpy.ops.uv.smart_project(angle_limit=66, island_margin=0.03)
-    for obj in [obj for obj in bpy.context.selected_objects if obj.type == 'MESH']:
-        obj.data.uv_layers.active = auvs[obj.name]
-        obj.data.update()
-    bpy.context.scene.update()
-
-
 # -----------------------------------------------------------------------
 #                           WRITE OUT
 # -----------------------------------------------------------------------
 def write_out(fname, anims, from_actions, uv_img_as_tex, sep_anim, a_only,
-              copy_tex, t_path, tbs, tex_processor, b_layers, autoselect,
+              copy_tex, t_path, tbs, autoselect,
               apply_obj_transform, m_actor, apply_m, apply_coll_tag, rp_compat, pview,
               loop_normals, force_export_vertex_colors, objects=None):
     global FILE_PATH, ANIMATIONS, ANIMS_FROM_ACTIONS, EXPORT_UV_IMAGE_AS_TEXTURE, \
         COPY_TEX_FILES, TEX_PATH, SEPARATE_ANIM_FILE, ANIM_ONLY, \
-        STRF, CALC_TBS, TEXTURE_PROCESSOR, BAKE_LAYERS, AUTOSELECT, APPLY_OBJ_TRANSFORM, \
+        STRF, CALC_TBS, AUTOSELECT, APPLY_OBJ_TRANSFORM, \
         MERGE_ACTOR_MESH, APPLY_MOD, APPLY_COLL_TAG, RP_COMPAT, PVIEW, USED_MATERIALS, USED_TEXTURES, \
         USE_LOOP_NORMALS, FORCE_EXPORT_VERTEX_COLORS
     importlib.reload(sys.modules[lib_name + '.texture_processor'])
@@ -1500,8 +1463,6 @@ def write_out(fname, anims, from_actions, uv_img_as_tex, sep_anim, a_only,
     CALC_TBS = tbs
     COPY_TEX_FILES = copy_tex
     TEX_PATH = t_path
-    TEXTURE_PROCESSOR = tex_processor
-    BAKE_LAYERS = b_layers
     AUTOSELECT = autoselect
     APPLY_OBJ_TRANSFORM = apply_obj_transform
     MERGE_ACTOR_MESH = m_actor
@@ -1618,14 +1579,14 @@ def write_out(fname, anims, from_actions, uv_img_as_tex, sep_anim, a_only,
         if APPLY_MOD:
             apply_modifiers(obj_list)
         reparenting_to_armature(obj_list)
-        # parented_to_armatured()
-        # if MERGE_ACTOR_MESH:
-        #    merge_objects()
+        if MERGE_ACTOR_MESH:
+            parented_to_armatured()
+            merge_objects()
         if bpy.ops.object.mode_set.poll():
             bpy.ops.object.mode_set(mode='OBJECT')
         # Generate UV layers for shadows
-        if BAKE_LAYERS and (BAKE_LAYERS['AO'][2] or BAKE_LAYERS['shadow'][2]):
-            generate_shadow_uvs()
+        """if BAKE_LAYERS and (BAKE_LAYERS['AO'][2] or BAKE_LAYERS['shadow'][2]):
+            generate_shadow_uvs()"""
         gr = Group(None)
 
         incl_arm = []
@@ -1745,19 +1706,4 @@ def write_out(fname, anims, from_actions, uv_img_as_tex, sep_anim, a_only,
     return errors
 
 
-def write_out_test(fname, anims, uv_img_as_tex, sep_anim, a_only, copy_tex,
-                   t_path, tbs, tex_processor, b_layers,
-                   m_actor, apply_m, apply_coll_tag, rp_compat, pview):
-    import profile
-    import pstats
-    wo = "write_out('%s', %s, %s, %s, %s, '%s', %s, '%s', '%s', %s, %s, %s, %s, %s)" % \
-         (fname, anims, uv_img_as_tex, sep_anim, a_only, copy_tex,
-          t_path, tbs, tex_processor, b_layers,
-          m_actor, apply_m, apply_coll_tag, rp_compat, pview)
-    wo = wo.replace('\\', '\\\\')
-    profile.runctx(wo, globals(), {}, 'main_prof')
-    stats = pstats.Stats('main_prof')
-    stats.strip_dirs()
-    stats.sort_stats('time')
-    stats.print_stats(10)
-    return True
+

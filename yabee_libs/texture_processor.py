@@ -7,14 +7,6 @@ import shutil
 if __name__ != '__main__':
     from .utils import convertFileNameToPanda, save_image
 
-BAKE_TYPES = {'diffuse': ('TEXTURE', 'MODULATE'),
-              'normal': ('NORMALS', 'NORMAL'),
-              'gloss': ('SPEC_INTENSITY', 'GLOSS'),
-              'glow': ('EMIT', 'GLOW'),
-              'AO': ('AO', 'MODULATE'),
-              'shadow': ('SHADOW', 'MODULATE')
-              }
-
 
 class PbrTextures:
     def __init__(self, obj_list, uv_img_as_texture, copy_tex, file_path, tex_path):
@@ -194,154 +186,6 @@ class PbrTextures:
         return tex_list
 
 
-class TextureBaker:
-    # TODO: Refactoring in progress
-    def __init__(self, obj_list, file_path, tex_path):
-        self.saved_objs = {}
-        self.rendered_images = {}
-        self.obj_list = obj_list[:]
-        self.file_path = file_path
-        self.tex_path = tex_path
-
-    def get_active_uv(self, obj):
-        auv = [uv for uv in obj.data.uv_layers if uv.active]
-        if auv:
-            return auv[0]
-        else:
-            return None
-
-    def _save_obj_props(self, obj):
-        props = {'uvs': [], 'textures': {}, 'active_uv': None}
-        active_uv = self.get_active_uv(obj)
-        if active_uv:
-            props['active_uv'] = active_uv
-            for uvd in active_uv.data:
-                props['uvs'].append(uvd.image)
-        self.saved_objs[obj.name] = props
-
-    def _restore_obj_props(self, obj):
-        if obj.name in self.saved_objs.keys():
-            props = self.saved_objs[obj.name]
-            if props['active_uv']:
-                obj.data.uv_textures.active = props['active_uv']
-                obj.data.update()
-                # obj.data.uv_layers.active = props['active_uv']
-            active_uv = self.get_active_uv(obj)
-            if active_uv:
-                for id, uvs in enumerate(props['uvs']):
-                    uvd = active_uv.data[id]
-                    # uvd.use_image, uvd.image = uvs
-                    uvd.image = uvs
-
-    def _prepare_images(self, btype, tsizex, tsizey):
-        assigned_data = {}
-        for obj in self.obj_list:
-            if obj.type == 'MESH' and self.get_active_uv(obj):
-                self._save_obj_props(obj)
-                img = bpy.data.images.new(obj.yabee_name + '_' + btype, tsizex, tsizey)
-                self.rendered_images[obj.name] = img.name
-                active_uv = self.get_active_uv(obj)
-                active_uv_idx = obj.data.uv_textures[:].index(active_uv)
-                if active_uv:
-                    for uvd in active_uv.data:
-                        # uvd.use_image = True
-                        uvd.image = img
-                    assigned_data[obj.yabee_name + '_' + btype] = (active_uv, img, active_uv_idx, BAKE_TYPES[btype][1])
-                else:
-                    print('ERROR: %s have not active UV layer' % obj.name)
-                    return None
-        return assigned_data
-
-    def _clear_images(self):
-        for iname in self.rendered_images.values():
-            img = bpy.data.images[iname]
-            img.user_clear()
-            bpy.data.images.remove(img)
-        self.rendred_images = []
-
-    def _save_rendered(self, spath):
-        for oname, iname in self.rendered_images.items():
-            img = bpy.data.images[iname]
-            img.save_render(spath + iname + '.' + bpy.context.scene.render.file_format.lower())
-
-    def _save_images(self):
-        paths = {}
-        for oname, iname in self.rendered_images.items():
-            img = bpy.data.images[iname]
-            paths[iname] = save_image(img, self.file_path, self.tex_path)
-        return paths
-
-    def _select(self, obj):
-        obj.select = True
-
-    def _deselect(self, obj):
-        obj.select = False
-
-    def bake(self, bake_layers):
-        tex_list = {}
-        for btype, params in bake_layers.items():
-            if len(params) == 2:
-                params = (params[0], params[0], params[1])
-            if params[2]:
-                if btype in BAKE_TYPES.keys():
-                    paths = None
-                    if len(self.obj_list) == 0:
-                        return False
-                    if btype in ('AO', 'shadow'):
-                        # Switch active UV layer to generated shadow layer
-                        for obj in self.obj_list:
-                            if obj.type == 'MESH' and 'yabee_shadow' in obj.data.uv_textures.keys():
-                                obj.data.uv_textures.active = obj.data.uv_textures['yabee_shadow']
-                                obj.data.update()
-                    assigned_data = self._prepare_images(btype, params[0], params[1])
-                    if assigned_data:
-                        old_selected = bpy.context.selected_objects[:]
-                        # bpy.ops.object.select_all(action = 'DESELECT')
-                        map(self._deselect, old_selected)
-                        bpy.context.scene.render.bake_type = BAKE_TYPES[btype][0]
-                        bpy.context.scene.render.bake_margin = 5
-                        bpy.context.scene.render.image_settings.color_mode = 'RGBA'
-                        bpy.context.scene.render.bake_normal_space = 'TANGENT'
-                        # print(bpy.context.selected_objects[:])
-                        map(self._select, self.obj_list)
-                        # bpy.context.scene.update()
-                        # print(bpy.context.selected_objects[:])
-                        bpy.ops.object.bake_image()
-                        # bpy.ops.object.select_all(action = 'DESELECT')
-                        map(self._deselect, self.obj_list)
-                        map(self._select, old_selected)
-                        # self._save_rendered(save_path)
-                        # self._save_rendered(bpy.app.tempdir)
-                        paths = self._save_images()
-                    for obj in self.obj_list:
-                        self._restore_obj_props(obj)
-                    self._clear_images()
-                    for key, val in assigned_data.items():
-                        uv_name = val[0].name
-                        if val[2] == 0:
-                            uv_name = ''
-                        # img_path = bpy.app.tempdir + val[1].name + '.' + bpy.context.scene.render.file_format.lower()
-                        # print('+++' + str(paths))
-                        envtype = val[3]
-                        if paths:
-                            img_path = paths[key]
-                        else:
-                            img_path = self.tex_path + val[1].name + '.' + bpy.context.scene.render.file_format.lower()
-                        # tex_list[key] = (uv_name, img_path, envtype)
-                        # Texture information dict
-                        tex_list[key] = {'path': img_path,
-                                         'scalars': [],
-                                         'transform': []}
-                        tex_list[key]['scalars'].append(('envtype', envtype))
-                        if uv_name:
-                            tex_list[key]['scalars'].append(('uv-name', uv_name))
-                        if envtype in ('GLOW', 'GLOSS'):
-                            tex_list[key]['scalars'].append(('alpha-file', '"' + img_path + '"'))
-                else:
-                    print('WARNING: unknown bake layer "%s"' % btype)
-        return tex_list
-
-
 if __name__ == '__main__':
     import os
 
@@ -386,7 +230,3 @@ if __name__ == '__main__':
                     img.save()
                     img.filepath == oldpath
         return rel_path
-
-
-    """tb = TextureBaker(bpy.context.selected_objects, './exp_test/test.egg', './tex')
-    print(tb.bake())"""

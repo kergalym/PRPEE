@@ -62,19 +62,6 @@ class EGGAnimList(bpy.types.PropertyGroup):
 
 class YABEEProperty(bpy.types.PropertyGroup):
     """ Main YABEE class for store settings """
-    opt_tex_proc: StringProperty(
-        name="Tex. processing",
-        description="Export all textures as MODULATE or bake texture layers",
-        default='NO',
-    )
-
-    opt_bake_diffuse: PointerProperty(type=EGGBakeProperty)
-    opt_bake_normal: PointerProperty(type=EGGBakeProperty)
-    opt_bake_gloss: PointerProperty(type=EGGBakeProperty)
-    opt_bake_glow: PointerProperty(type=EGGBakeProperty)
-    opt_bake_AO: PointerProperty(type=EGGBakeProperty)
-    opt_bake_shadow: PointerProperty(type=EGGBakeProperty)
-
     opt_tbs_proc: EnumProperty(
         name="TBS generation",
         description="Export all textures as MODULATE or bake texture layers",
@@ -213,19 +200,7 @@ class YABEEProperty(bpy.types.PropertyGroup):
         if not self.opt_anim_only:
             layout.row().prop(self, 'opt_tbs_proc')
 
-            # Hide Texture Baking dialog until Texture Baking will be reimplemented
-            """box = layout.box()
-            box.row().prop(self, 'opt_tex_proc')
-            if self.opt_tex_proc == 'BAKE':
-                self.opt_bake_diffuse.draw(box.row(align=True), "Diffuse")
-                self.opt_bake_normal.draw(box.row(align=True), "Normal")
-                self.opt_bake_gloss.draw(box.row(align=True), "Gloss")
-                self.opt_bake_glow.draw(box.row(align=True), "Glow")
-            if self.opt_tex_proc != 'RAW':
-                self.opt_bake_AO.draw(box.row(align=True), "AO")
-                self.opt_bake_shadow.draw(box.row(align=True), "Shadow")"""
-
-            if self.opt_copy_tex_files or self.opt_tex_proc == 'BAKE':
+            if self.opt_copy_tex_files:
                 box = layout.box()
                 box.row().prop(self, 'opt_tex_path')
             else:
@@ -239,25 +214,6 @@ class YABEEProperty(bpy.types.PropertyGroup):
             layout.row().prop(self, 'opt_pview')
             layout.row().prop(self, 'opt_use_loop_normals')
             layout.row().prop(self, 'opt_force_export_vertex_colors')
-
-    def get_bake_dict(self):
-        d = {}
-        opts = ((self.opt_bake_diffuse, 'diffuse'),
-                (self.opt_bake_normal, 'normal'),
-                (self.opt_bake_gloss, 'gloss'),
-                (self.opt_bake_glow, 'glow'),
-                (self.opt_bake_AO, 'AO'),
-                (self.opt_bake_shadow, 'shadow')
-                )
-        for opt, name in opts:
-            if self.opt_tex_proc == 'SIMPLE':
-                if name in ('AO', 'shadow'):
-                    d[name] = (opt.res_x, opt.res_y, opt.export)
-                else:
-                    d[name] = (opt.res_x, opt.res_y, False)
-            else:
-                d[name] = (opt.res_x, opt.res_y, opt.export)
-        return d
 
     def check_warns(self, context):
         warns = []
@@ -275,20 +231,7 @@ class YABEEProperty(bpy.types.PropertyGroup):
         return warns
 
     def reset_defaults(self):
-        self.opt_tex_proc = 'BAKE'
         self.opt_tbs_proc = 'NO'
-        self.opt_bake_diffuse.export = True
-        self.opt_bake_diffuse.res_x, self.opt_bake_diffuse.res_y = 512, 512
-        self.opt_bake_normal.export = False
-        self.opt_bake_normal.res_x, self.opt_bake_normal.res_y = 512, 512
-        self.opt_bake_gloss.export = False
-        self.opt_bake_gloss.res_x, self.opt_bake_gloss.res_y = 512, 512
-        self.opt_bake_glow.export = False
-        self.opt_bake_glow.res_x, self.opt_bake_glow.res_y = 512, 512
-        self.opt_bake_AO.export = False
-        self.opt_bake_AO.res_x, self.opt_bake_AO.res_y = 512, 512
-        self.opt_bake_shadow.export = False
-        self.opt_bake_shadow.res_x, self.opt_bake_shadow.res_y = 512, 512
         self.opt_export_uv_as_texture = False
         self.opt_copy_tex_files = True
         self.opt_separate_anim_files = True
@@ -296,7 +239,7 @@ class YABEEProperty(bpy.types.PropertyGroup):
         self.opt_tex_path = './tex'
         self.opt_autoselect = False
         self.opt_apply_object_transform = False
-        self.opt_merge_actor = True
+        self.opt_merge_actor = False
         self.opt_apply_modifiers = True
         self.opt_apply_collide_tag = False
         self.opt_rp_compat = False
@@ -405,8 +348,6 @@ class ExportPanda3DEGG(bpy.types.Operator, ExportHelper):
                                       sett.opt_copy_tex_files,
                                       sett.opt_tex_path,
                                       sett.opt_tbs_proc,
-                                      sett.opt_tex_proc,
-                                      sett.get_bake_dict(),
                                       sett.opt_autoselect,
                                       sett.opt_apply_object_transform,
                                       sett.opt_merge_actor,
