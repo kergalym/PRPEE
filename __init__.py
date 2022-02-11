@@ -9,8 +9,7 @@ from .yabee_libs import egg_writer
 bl_info = {
     "name": "PRPEE Panda3D EGG format",
     "author": "Andrey (Ninth) Arbuzov - Galym Kerimbekov",
-    "blender": (2, 80, 0),
-    "api": 41226,
+    "blender": (3, 0, 0),
     "location": "File > Import-Export",
     "description": "Egg Exporter for Blender 2.8 and Panda3D with RenderPipeline",
     "warning": "May contain bugs. Make backup of your file before use.",
@@ -430,13 +429,13 @@ def register():
 
 
 def unregister():
-    bpy.utils.unregister_module(__name__)
-    bpy.types.INFO_MT_file_export.remove(menu_func_export)
+    for cls in classes:
+        bpy.utils.unregister_class(cls)
+
+    bpy.types.TOPBAR_MT_file_import.remove(menu_func_export)
     del (__builtins__['p3d_egg_export'])
 
 
 if __name__ == "__main__":
     register()
 
-    # test call
-    # bpy.ops.export.panda3d_egg('INVOKE_DEFAULT')
