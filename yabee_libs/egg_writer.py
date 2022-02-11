@@ -1579,9 +1579,6 @@ def write_out(fname, anims, from_actions, uv_img_as_tex, sep_anim, a_only,
         if APPLY_MOD:
             apply_modifiers(obj_list)
         reparenting_to_armature(obj_list)
-        # parented_to_armatured()
-        # if MERGE_ACTOR_MESH:
-        #    merge_objects()
         if bpy.ops.object.mode_set.poll():
             bpy.ops.object.mode_set(mode='OBJECT')
         gr = Group(None)
