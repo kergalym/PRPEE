@@ -1579,14 +1579,11 @@ def write_out(fname, anims, from_actions, uv_img_as_tex, sep_anim, a_only,
         if APPLY_MOD:
             apply_modifiers(obj_list)
         reparenting_to_armature(obj_list)
-        if MERGE_ACTOR_MESH:
-            parented_to_armatured()
-            merge_objects()
+        # parented_to_armatured()
+        # if MERGE_ACTOR_MESH:
+        #    merge_objects()
         if bpy.ops.object.mode_set.poll():
             bpy.ops.object.mode_set(mode='OBJECT')
-        # Generate UV layers for shadows
-        """if BAKE_LAYERS and (BAKE_LAYERS['AO'][2] or BAKE_LAYERS['shadow'][2]):
-            generate_shadow_uvs()"""
         gr = Group(None)
 
         incl_arm = []
@@ -1627,7 +1624,6 @@ def write_out(fname, anims, from_actions, uv_img_as_tex, sep_anim, a_only,
                     file.write(gr.get_full_egg_str())
                 else:
                     exit("WARNING: No object is selected! Exiting...")
-
 
             anim_collectors = []
             if ANIMS_FROM_ACTIONS:
@@ -1704,6 +1700,5 @@ def write_out(fname, anims, from_actions, uv_img_as_tex, sep_anim, a_only,
                 except:
                     print('WARNING: Can\'t delete', obj, 'from', d)
     return errors
-
 
 
