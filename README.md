@@ -1,7 +1,7 @@
 ![logo](https://i.imgur.com/wIQjyYY.png)
 
 
-PRPEE 1.1
+PRPEE 1.2
 =====
 Egg Exporter for Blender 2.8+ and Panda3D with or without RenderPipeline
 
@@ -33,6 +33,7 @@ New minor features
   - RenderPipeline Foilage Shading Model. 
   It activates only when Specular input have been set to lower than 0.5 and IOR input to higher than 1.0  
   (works with Principled BSDF only)
+- Emission Node support
   
 **Some of these features could be activated by default**, uncheck them first if you don't use them and manually select your object(s).
 **Automatic selection** automatically selects all objects in the scene. 

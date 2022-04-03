@@ -1233,17 +1233,19 @@ def get_egg_materials_str(object_names=None):
 
                         clearcoat = principled_bsdf.inputs['Clearcoat'].default_value
 
-                        base_r = basecol[0]
-                        base_g = basecol[1]
-                        base_b = basecol[2]
-                        # base_a = basecol[3]
+                        intensivity = 1.0
 
-                        emit_r = emission[0]
-                        emit_g = emission[1]
+                        base_r = basecol[0] * intensivity
+                        base_g = basecol[1] * intensivity
+                        base_b = basecol[2] * intensivity
+                        base_a = basecol[3] * intensivity
+
+                        emit_r = emission[0] * intensivity
+                        emit_g = emission[1] * intensivity
                         if RP_COMPAT:
                             emit_g = normal_map_bump_factor
-                        emit_b = emission[2]
-                        emit_a = emission[3]
+                        emit_b = emission[2] * intensivity
+                        emit_a = emission[3] * intensivity
 
                         if RP_COMPAT:
                             # Apply RenderPipeline SHADING_MODEL_TRANSPARENT 2;
@@ -1267,17 +1269,57 @@ def get_egg_materials_str(object_names=None):
                         mat_str += '  <Scalar> baseb { %s }\n' % str(base_b)
                         # mat_str += '  <Scalar> basea { %s }\n' % str(base_a)
 
+                        mat_str += '  <Scalar> ambr { %s }\n' % str(base_r)
+                        mat_str += '  <Scalar> ambg { %s }\n' % str(base_g)
+                        mat_str += '  <Scalar> ambb { %s }\n' % str(base_b)
+                        mat_str += '  <Scalar> amba { %s }\n' % str(base_a)
+
                         mat_str += '  <Scalar> emitr { %s }\n' % str(emit_r)
                         mat_str += '  <Scalar> emitg { %s }\n' % str(emit_g)
                         mat_str += '  <Scalar> emitb { %s }\n' % str(emit_b)
                         mat_str += '  <Scalar> emita { %s }\n' % str(emit_a)
+
+                        mat_str += '  <Scalar> specr { %s }\n' % str(base_r)
+                        mat_str += '  <Scalar> specg { %s }\n' % str(base_g)
+                        mat_str += '  <Scalar> specb { %s }\n' % str(base_b)
+                        mat_str += '  <Scalar> speca { %s }\n' % str(base_a)
 
                         mat_str += '  <Scalar> shininess { %s }\n' % str(specular)
 
                         mat_str += '  <Scalar> roughness { %s }\n' % str(roughness)
                         mat_str += '  <Scalar> metallic { %s }\n' % str(metallic)
                         mat_str += '  <Scalar> ior { %s }\n' % str(ior)
-                        mat_str += '  <Scalar> local { %s }\n' % str(0)
+                        mat_str += '  <Scalar> local { %s }\n' % str(1)
+
+                    elif node.name == "Emission":
+                        emi_node = node
+                        emi_col = emi_node.inputs["Color"].default_value
+                        # Divide emission strength to 19 if it's 5.0,
+                        # so Blender's 5.0 is equal to RP's 0.1
+                        emi_strength = 0.1
+                        if emi_node.inputs["Strength"].default_value > 0.1:
+                            emi_strength = 0.1
+
+                        base_r = emi_col[0] * emi_strength
+                        base_g = emi_col[1] * emi_strength
+                        base_b = emi_col[2] * emi_strength
+
+                        emit_r = emi_col[0] * emi_strength
+                        if RP_COMPAT:
+                            emit_r = 1
+                        emit_g = emi_col[1] * emi_strength
+                        emit_b = emi_col[2] * emi_strength
+                        emit_a = emi_col[3] * emi_strength
+
+                        mat_str += '  <Scalar> baser { %s }\n' % str(base_r)
+                        mat_str += '  <Scalar> baseg { %s }\n' % str(base_g)
+                        mat_str += '  <Scalar> baseb { %s }\n' % str(base_b)
+                        # mat_str += '  <Scalar> basea { %s }\n' % str(base_a)
+
+                        mat_str += '  <Scalar> emitr { %s }\n' % str(emit_r)
+                        mat_str += '  <Scalar> emitg { %s }\n' % str(emit_g)
+                        mat_str += '  <Scalar> emitb { %s }\n' % str(emit_b)
+                        mat_str += '  <Scalar> emita { %s }\n' % str(emit_a)
 
         if matIsFancyPBRNode is False:
             print("INFO: Non-Shader Mode is using for!")
