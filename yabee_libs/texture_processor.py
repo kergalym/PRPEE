@@ -77,14 +77,21 @@ class PbrTextures:
 
                                         scalars = []
 
+                                        imageNode = bpy.data.images[textureNode.image.name]
+
                                         if (link.to_socket.name == 'Base Color'
                                                 and link.to_node.inputs[0].is_linked):
-                                            # scalars.append(('format', 'srgb'))
+                                            if imageNode.colorspace_settings.name == "sRGB":
+                                                scalars.append(('format', 'srgb'))
+
                                             scalars.append(('envtype', 'modulate'))
 
                                         elif (link.to_socket.name == 'Normal'
-                                                and link.from_node.outputs[0].is_linked):
-                                            scalars.append(('format', 'rgb'))
+                                              and link.from_node.outputs[0].is_linked):
+
+                                            if imageNode.colorspace_settings.name == "Non-Color":
+                                                scalars.append(('format', 'rgb'))
+
                                             scalars.append(('envtype', 'normal'))
 
                                         # Make unique named Image Texture node by assigning the texture name
@@ -94,7 +101,7 @@ class PbrTextures:
                                             print("INFO: {} node is renamed to {}".format(textureNode.name,
                                                                                           textureNode.image.name))
 
-                                        if ( not textureNode.inputs[0].is_linked
+                                        if (not textureNode.inputs[0].is_linked
                                                 and textureNode.image):
                                             print("WARNING: Texture has no UV-INPUT!", obj.name,
                                                   link.to_socket.name)
@@ -128,18 +135,21 @@ class PbrTextures:
 
                                         # Process wrap modes.
                                         if textureNode.extension == 'EXTEND':
-                                            scalars.append(('wrap', 'CLAMP'))
+                                            scalars.append(('wrap', 'clamp'))
 
-                                        elif textureNode.extension in ('CLIP', 'CLIP_CUBE'):
-                                            scalars.append(('wrap', 'BORDER_COLOR'))
-                                            scalars.append(('borderr', '1'))
-                                            scalars.append(('borderg', '1'))
-                                            scalars.append(('borderb', '1'))
-                                            scalars.append(('bordera', '1'))
-
-                                        elif textureNode.extension in ('REPEAT', 'CHECKER'):
+                                        elif textureNode.extension == 'REPEAT':
                                             scalars.append(('wrapu', 'repeat'))
                                             scalars.append(('wrapv', 'repeat'))
+
+                                        # Alpha blending modes for texture
+                                        if bpy.context.object.active_material.blend_method == "OPAQUE":
+                                            scalars.append(('alpha', 'off'))
+                                        elif bpy.context.object.active_material.blend_method == "CLIP":
+                                            scalars.append(('alpha', 'binary'))
+                                        elif bpy.context.object.active_material.blend_method == "HASHED":
+                                            scalars.append(('alpha', 'ms'))
+                                        elif bpy.context.object.active_material.blend_method == "BLEND":
+                                            scalars.append(('alpha', 'blend'))
 
                                         # Process coordinate mapping using a matrix.
                                         mappings = (

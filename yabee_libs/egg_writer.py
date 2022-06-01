@@ -1222,6 +1222,8 @@ def get_egg_materials_str(object_names=None):
                         else:
                             ior = principled_bsdf.inputs["IOR"].default_value
 
+                        alpha = principled_bsdf.inputs["Alpha"].default_value
+
                         normal_map_bump_factor = 0.0
                         if principled_bsdf.inputs["Normal"].is_linked:
                             if principled_bsdf.inputs["Normal"].links[0].from_node.name == "Normal Map":
@@ -1267,7 +1269,9 @@ def get_egg_materials_str(object_names=None):
                         mat_str += '  <Scalar> baser { %s }\n' % str(base_r)
                         mat_str += '  <Scalar> baseg { %s }\n' % str(base_g)
                         mat_str += '  <Scalar> baseb { %s }\n' % str(base_b)
-                        # mat_str += '  <Scalar> basea { %s }\n' % str(base_a)
+
+                        if not RP_COMPAT:
+                            mat_str += '  <Scalar> basea { %s }\n' % str(alpha)
 
                         mat_str += '  <Scalar> ambr { %s }\n' % str(base_r)
                         mat_str += '  <Scalar> ambg { %s }\n' % str(base_g)
