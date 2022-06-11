@@ -1229,7 +1229,9 @@ def get_egg_materials_str(object_names=None):
                             if principled_bsdf.inputs["Normal"].links[0].from_node.name == "Normal Map":
                                 normal_map_node = principled_bsdf.inputs["Normal"].links[0].from_node
                                 if normal_map_node.inputs[0].name == "Strength":
-                                    normal_map_bump_factor = normal_map_node.inputs["Strength"].default_value
+                                    # normal_map_bump_factor = normal_map_node.inputs["Strength"].default_value
+                                    if normal_map_node.inputs["Strength"].default_value > 0:
+                                        normal_map_bump_factor = 0.3
 
                         transmission = principled_bsdf.inputs['Transmission'].default_value
 
