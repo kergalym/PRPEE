@@ -145,14 +145,15 @@ class PbrTextures:
                                             scalars.append(('wrapv', 'repeat'))
 
                                         # Alpha blending modes for texture
-                                        if bpy.context.object.active_material.blend_method == "OPAQUE":
-                                            scalars.append(('alpha', 'off'))
-                                        elif bpy.context.object.active_material.blend_method == "CLIP":
-                                            scalars.append(('alpha', 'binary'))
-                                        elif bpy.context.object.active_material.blend_method == "HASHED":
-                                            scalars.append(('alpha', 'ms'))
-                                        elif bpy.context.object.active_material.blend_method == "BLEND":
-                                            scalars.append(('alpha', 'blend'))
+                                        if hasattr(bpy.context.object.active_material, "blend_method"):
+                                            if bpy.context.object.active_material.blend_method == "OPAQUE":
+                                                scalars.append(('alpha', 'off'))
+                                            elif bpy.context.object.active_material.blend_method == "CLIP":
+                                                scalars.append(('alpha', 'binary'))
+                                            elif bpy.context.object.active_material.blend_method == "HASHED":
+                                                scalars.append(('alpha', 'ms'))
+                                            elif bpy.context.object.active_material.blend_method == "BLEND":
+                                                scalars.append(('alpha', 'blend'))
 
                                         # Process coordinate mapping using a matrix.
                                         mappings = (
