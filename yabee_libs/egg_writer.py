@@ -796,8 +796,11 @@ class EGGMeshObjectData(EGGBaseObjectData):
             if not self.obj_ref.data.materials[face.material_index]:
                 return attributes
 
-            if self.obj_ref.data.materials[face.material_index].use_backface_culling:
+            if not self.obj_ref.data.materials[face.material_index].use_backface_culling:
                 attributes.append('<BFace> { 1 }')
+            elif self.obj_ref.data.materials[face.material_index].use_backface_culling:
+                attributes.append('<BFace> { 0 }')
+
         return attributes
 
     def collect_poly_vertexref(self, face, attributes):
