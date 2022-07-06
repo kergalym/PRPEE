@@ -136,6 +136,12 @@ class YABEEProperty(bpy.types.PropertyGroup):
         default=False,
     )
 
+    opt_apply_softbody_pin_tag: BoolProperty(
+        name="Apply Softbody Pin tag",
+        description="Add Pin tag on exported objects. Required for soft bodies",
+        default=False,
+    )
+
     opt_rp_compat: BoolProperty(
         name="RP compat",
         description="Enable compatibility with RenderPipeline",
@@ -209,6 +215,7 @@ class YABEEProperty(bpy.types.PropertyGroup):
             layout.row().prop(self, 'opt_merge_actor')
             layout.row().prop(self, 'opt_apply_modifiers')
             layout.row().prop(self, 'opt_apply_collide_tag')
+            layout.row().prop(self, "opt_apply_softbody_pin_tag")
             layout.row().prop(self, 'opt_rp_compat')
             layout.row().prop(self, 'opt_pview')
             layout.row().prop(self, 'opt_use_loop_normals')
@@ -241,6 +248,7 @@ class YABEEProperty(bpy.types.PropertyGroup):
         self.opt_merge_actor = False
         self.opt_apply_modifiers = True
         self.opt_apply_collide_tag = False
+        self.opt_apply_softbody_pin_tag = False
         self.opt_rp_compat = False
         self.opt_pview = False
         self.opt_use_loop_normals = False
@@ -352,6 +360,7 @@ class ExportPanda3DEGG(bpy.types.Operator, ExportHelper):
                                       sett.opt_merge_actor,
                                       sett.opt_apply_modifiers,
                                       sett.opt_apply_collide_tag,
+                                      sett.opt_apply_softbody_pin_tag,
                                       sett.opt_rp_compat,
                                       sett.opt_pview,
                                       sett.opt_use_loop_normals,

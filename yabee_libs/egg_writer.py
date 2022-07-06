@@ -28,6 +28,7 @@ APPLY_OBJ_TRANSFORM = None
 MERGE_ACTOR_MESH = None
 APPLY_MOD = None
 APPLY_COLL_TAG = None
+APPLY_PIN_TAG = None
 RP_COMPAT = None
 PVIEW = True
 FORCE_EXPORT_VERTEX_COLORS = False
@@ -177,6 +178,19 @@ class Group:
                                    % ('  ' * level, eggSafeName(self.object.yabee_name)))
                 if not APPLY_COLL_TAG:
                     egg_str.append('%s<Group> %s {\n' % ('  ' * level, eggSafeName(self.object.yabee_name)))
+
+                if APPLY_PIN_TAG:
+                    obj = bpy.context.active_object
+                    vtx = ''
+                    for group in obj.vertex_groups:
+                        if str(group.name) == "cloth_pin":
+                            bpy.ops.object.vertex_group_set_active(group=str(group.name))
+
+                            for v in obj.data.vertices:
+                                if v.select:
+                                    vtx += '%i ' % v.index
+                    pins = '%s<Tag> ClothPin { %s }\n' % ('    ' * level, vtx)
+                    egg_str.append(pins)
 
                 if (self.object.type == 'MESH'
                         and (self.object.data.shape_keys
@@ -1492,12 +1506,12 @@ def apply_modifiers(obj_list=None):
 # -----------------------------------------------------------------------
 def write_out(fname, anims, from_actions, uv_img_as_tex, sep_anim, a_only,
               copy_tex, t_path, tbs, autoselect,
-              apply_obj_transform, m_actor, apply_m, apply_coll_tag, rp_compat, pview,
+              apply_obj_transform, m_actor, apply_m, apply_coll_tag, apply_pin_tag, rp_compat, pview,
               loop_normals, force_export_vertex_colors, objects=None):
     global FILE_PATH, ANIMATIONS, ANIMS_FROM_ACTIONS, EXPORT_UV_IMAGE_AS_TEXTURE, \
         COPY_TEX_FILES, TEX_PATH, SEPARATE_ANIM_FILE, ANIM_ONLY, \
         STRF, CALC_TBS, AUTOSELECT, APPLY_OBJ_TRANSFORM, \
-        MERGE_ACTOR_MESH, APPLY_MOD, APPLY_COLL_TAG, RP_COMPAT, PVIEW, USED_MATERIALS, USED_TEXTURES, \
+        MERGE_ACTOR_MESH, APPLY_MOD, APPLY_COLL_TAG, APPLY_PIN_TAG, RP_COMPAT, PVIEW, USED_MATERIALS, USED_TEXTURES, \
         USE_LOOP_NORMALS, FORCE_EXPORT_VERTEX_COLORS
     importlib.reload(sys.modules[lib_name + '.texture_processor'])
     importlib.reload(sys.modules[lib_name + '.utils'])
@@ -1517,6 +1531,7 @@ def write_out(fname, anims, from_actions, uv_img_as_tex, sep_anim, a_only,
     MERGE_ACTOR_MESH = m_actor
     APPLY_MOD = apply_m
     APPLY_COLL_TAG = apply_coll_tag
+    APPLY_PIN_TAG = apply_pin_tag
     RP_COMPAT = rp_compat
     PVIEW = pview
     USE_LOOP_NORMALS = loop_normals
