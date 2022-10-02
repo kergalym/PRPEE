@@ -34,10 +34,6 @@ New minor features
   It activates only when Specular input have been set to lower than 0.5 and IOR input to higher than 1.0  
   (works with Principled BSDF only)
 - Emission Node support
-
-- Vertices pinning for Bullet soft bodies.
-  The tag ***ClothPin*** requires vertex group named ***cloth_pin*** to get vertices which have been assigned to certain
-   vertex group as pins for soft body.
   
 **Some of these features could be activated by default**, uncheck them first if you don't use them and manually select your object(s).
 **Automatic selection** automatically selects all objects in the scene. 
