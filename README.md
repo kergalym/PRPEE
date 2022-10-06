@@ -19,7 +19,7 @@ New minor features
 =====
 - Automatic selection
 - Apply object transform
-- Blender "BackFace Culling" feature (fixed)
+- Blender "BackFace Culling" feature
 
 - RP Compat option which now activates RP-specific material parameters like emission colors, defaults to False. 
   - RenderPipeline Transparent Shading Model. 
@@ -57,14 +57,14 @@ in Panda3D it was possible to extend PRPEE to improve the workflow for artists w
 <p style="font-size: small">Normal mapping Setup for Panda3D (with TBS option)</p>
 
 <img src="https://i.imgur.com/lndfqdr.jpg" />
-<p style="font-size: small">Normal mapping Setup for Panda3D + RenderPipeline</p>
+<p style="font-size: small">Normal mapping Setup for Panda3D </p>
 
 To use it, you have to create a material for your mesh, set up the Principled BSDF shader 
 by connecting at least the Image Texture shader and optionally UV Map.
 
 The PBR node support is still work in progress, if you find important features missing please contact the developers.
 
-**Use this version of PRPEE carefully. It designed to use with RenderPipeline only. It may contain bugs 
+**Use this version of PRPEE carefully. It may contain bugs 
 and may not work for the objects with complex node system 
 applied (something more than UVMap and Texture Image).**
 
@@ -75,9 +75,10 @@ How To Export
 =====
 Before exporting:
 
-<img src="https://i.imgur.com/ZHV38R8.png" />
+<img src="https://i.imgur.com/ndB0JsA.png" />
 
 1. Select all meshes of the character except armature, or
 2. Select all meshes of the character including armature
 3. Select Blender or Panda for for Tangent/Binormal Generation (TBS) which is needed for normalmapping 
 if you use SimplePBR or Shader Generator  
+4. Uncheck **RP compat** if you don't use RenderPipeline
