@@ -1199,7 +1199,7 @@ def get_egg_materials_str(object_names=None):
                         if not principled_bsdf.inputs["Base Color"].is_linked:
                             basecol = list(principled_bsdf.inputs["Base Color"].default_value)
                         else:
-                            basecol = list(principled_bsdf.inputs["Base Color"].default_value)
+                            basecol = [1, 1, 1, 1]
 
                         if not principled_bsdf.inputs["Emission"].is_linked:
                             emission = list(principled_bsdf.inputs["Emission"].default_value)
